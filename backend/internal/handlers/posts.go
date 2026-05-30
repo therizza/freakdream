@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 	"strconv"
 
@@ -171,13 +172,17 @@ func (h *PostHandler) Share(w http.ResponseWriter, r *http.Request) {
 	var req struct {
 		PostID int64 `json:"post_id"`
 	}
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil || req.PostID == 0 {
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil || req.PostID <= 0 {
 		respondError(w, http.StatusBadRequest, "post_id is required")
 		return
 	}
 
 	if _, err := h.posts.GetByID(r.Context(), req.PostID); err != nil {
-		respondError(w, http.StatusNotFound, "source post not found")
+		if errors.Is(err, repository.ErrNotFound) {
+			respondError(w, http.StatusNotFound, "source post not found")
+		} else {
+			respondError(w, http.StatusInternalServerError, "failed to load source post")
+		}
 		return
 	}
 
