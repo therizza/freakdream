@@ -15,7 +15,7 @@ type contextKey string
 
 const UserIDKey contextKey = "userID"
 
-// JWTAuth validates ****** and injects userID into request context.
+// JWTAuth validates JWT tokens from the Authorization header and injects userID into request context.
 func JWTAuth(secret string) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

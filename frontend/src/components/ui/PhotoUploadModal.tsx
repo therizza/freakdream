@@ -14,8 +14,14 @@ export default function PhotoUploadModal({ onClose, onUpload, loading }: PhotoUp
 
   function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
-    if (!file) return
-    setPreview(URL.createObjectURL(file))
+    if (!file || !file.type.startsWith('image/')) return
+    const reader = new FileReader()
+    reader.onload = () => {
+      if (typeof reader.result === 'string' && reader.result.startsWith('data:image/')) {
+        setPreview(reader.result)
+      }
+    }
+    reader.readAsDataURL(file)
   }
 
   function handleSubmit(e: React.FormEvent) {
