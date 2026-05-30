@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/mail"
 	"strconv"
 	"time"
 
@@ -78,6 +79,21 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 
 	if req.Email == "" || req.Senha == "" || req.Nome == "" {
 		respondError(w, http.StatusBadRequest, "nome, email, and senha are required")
+		return
+	}
+
+	if _, err := mail.ParseAddress(req.Email); err != nil {
+		respondError(w, http.StatusBadRequest, "invalid email format")
+		return
+	}
+
+	if len(req.Nome) > 100 {
+		respondError(w, http.StatusBadRequest, "nome must be at most 100 characters")
+		return
+	}
+
+	if len(req.Sobre) > 200 {
+		respondError(w, http.StatusBadRequest, "sobre must be at most 200 characters")
 		return
 	}
 

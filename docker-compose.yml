@@ -25,21 +25,34 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    env_file: ./backend/.env
     environment:
       DB_HOST: db
       DB_PORT: "3306"
+      DB_USER: freakdream
+      DB_PASSWORD: changeme
+      DB_NAME: freakdream
+      JWT_SECRET: change-me-in-production-use-strong-secret
+      JWT_EXPIRY_HOURS: "24"
+      SERVER_PORT: "8080"
+      UPLOAD_DIR: /app/uploads
+      FRONTEND_ORIGIN: http://localhost
     volumes:
       - uploads:/app/uploads
     ports:
       - "8080:8080"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   frontend:
     build:
       context: ./frontend
     restart: unless-stopped
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
     ports:
       - "80:80"
 

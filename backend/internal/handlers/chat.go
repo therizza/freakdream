@@ -93,6 +93,9 @@ func (h *ChatHub) readPump(c *client) {
 			if msg.ReceiverID == 0 || msg.Texto == "" {
 				continue
 			}
+			if len(msg.Texto) > 1000 {
+				continue
+			}
 			_, _ = h.chat.Save(c.ctx, c.userID, msg.ReceiverID, msg.Texto)
 
 			out, _ := json.Marshal(models.WSMessage{

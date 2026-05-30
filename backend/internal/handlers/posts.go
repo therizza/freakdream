@@ -66,6 +66,11 @@ func (h *PostHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if len(req.Texto) > 2000 {
+		respondError(w, http.StatusBadRequest, "texto must be at most 2000 characters")
+		return
+	}
+
 	id, err := h.posts.Create(r.Context(), userID, models.PostTypeText, req.Texto)
 	if err != nil {
 		respondError(w, http.StatusInternalServerError, "failed to create post")
@@ -166,8 +171,13 @@ func (h *PostHandler) Share(w http.ResponseWriter, r *http.Request) {
 	var req struct {
 		PostID int64 `json:"post_id"`
 	}
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil || req.PostID == 0 {
 		respondError(w, http.StatusBadRequest, "post_id is required")
+		return
+	}
+
+	if _, err := h.posts.GetByID(r.Context(), req.PostID); err != nil {
+		respondError(w, http.StatusNotFound, "source post not found")
 		return
 	}
 
